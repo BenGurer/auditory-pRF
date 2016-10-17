@@ -1,0 +1,7 @@
+
+Improve HDR fitting, currently just two parameters
+See what params Thomas 2015 fit
+Currently fits:
+HDR fitting:
+'timelag','tau'
+'Time before start of rise of hemodynamic function','Width of the hemodynamic function (tau parameter of gamma)
