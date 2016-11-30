@@ -1,4 +1,16 @@
+%% To do
+% plot error bars
+%   calculate HDR function then average rather than average params - this
+%   will allow error bar - include scaling
+
 function pRFPlot_HDRauditory(v,overlayNum,scanNum,x,y,z,roi)
+% pRFPlot_HDRauditory.m
+%
+%        $Id$
+%      usage: pRFPlot_HDRauditory() is an interrogator function
+%         by: Ben Gurer
+%       date: 18-Oct-2016
+%    purpose: plot estimated HDR from pRF analysis
 
 % check arguments
 if ~any(nargin == [7])
@@ -32,13 +44,18 @@ threshold = 0.1;
 [r2index r2v] = find(d.r2>=threshold);
 paramsr2thres = d.params(:,r2index);
 
+
 hdrAv = mean(d.params,2);
+hdrE = std(d.params,2);
 
 dispHDRFit(hdrAv,d.fitParams)
 
 hdrAvr2 = mean(paramsr2thres,2);
 dispHDRFit(hdrAvr2,d.fitParams)
 
+function averHDR(d
+p = getFitParams(params,fitParams);
+canonical
 function dispHDRFit(params,fitParams)
 figure
 % mlrSmartfig('pRFFit_getModelResidual','reuse');
@@ -52,6 +69,7 @@ figure
 % xlabel('Time (sec)');
 % ylabel('BOLD (% sig change)');
 p = getFitParams(params,fitParams);
+% e = getFitParams(params,fitParams); 
 titleStr = sprintf('x: %s y: %s rfHalfWidth: %s',mlrnum2str(p.x),mlrnum2str(p.y),mlrnum2str(p.std));
 titleStr = sprintf('%s\n(timelag: %s tau: %s exponent: %s)',titleStr,mlrnum2str(p.canonical.timelag),mlrnum2str(p.canonical.tau),mlrnum2str(p.canonical.exponent));
 if p.canonical.diffOfGamma

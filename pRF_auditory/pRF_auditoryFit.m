@@ -939,48 +939,64 @@ stimT = fitParams.stim{1}.t;
     if fitParams.quickPrefit
         if fitParams.verbose,disp(sprintf('(pRFFit) Doing quick prefit'));end
         % convert stimulus spacing to voxel magnifcation domain
-        StimXMin = min(stimX)*0.5;
-        StimXMax = max(stimX)*2;
-        nStimuli = round(length(stimX)/10);
+%         StimXMin = min(stimX)*0.5;
+        StimXMin = 0;
+        StimXMax = max(stimX)*1.25;
+        nPreFit = round(length(stimX)/10);
+        StimXHWMin = 0.1;
+        StimXHWMax = max(stimX);
+        xHW = linspace(StimXHWMin, StimXHWMax, nPreFit);   
         if any(strcmp(fitParams.voxelScale,{'lin'}))
-            xspace = linspace(StimXMin, StimXMax, nStimuli);
+            xspace = linspace(StimXMin, StimXMax, nPreFit);
         elseif any(strcmp(fitParams.voxelScale,{'log'}))
-            xspace = 10.^(linspace(log10(StimXMin), log10(StimXMax), nStimuli));
+            xspace = 10.^(linspace(log10(StimXMin), log10(StimXMax), nPreFit));
         elseif any(strcmp(fitParams.voxelScale,{'erb'}))
-            xspace = funInvNErb(linspace(funNErb(StimXMin), funNErb(StimXMax), nStimuli));
+            xspace = funInvNErb(linspace(funNErb(StimXMin), funNErb(StimXMax), nPreFit));
         else
             disp(sprintf('(pRFFit:getRFModel) Unknown voxelScale: %s',fitParams.voxelScale));
         end
         % make sure here that x and y points go through 0 symmetrically
         %     [prefitx prefity prefitrfHalfWidth] = ndgrid(-0.375:0.125:0.375,-0.375:0.125:0.375,[0.025 0.05 0.15 0.4]);
         % change this to be based on stimulus properties
-        [prefitx prefity prefitrfHalfWidth prefitHDRExp] = ndgrid(xspace,1,[0.5 1 2 5 10],2:2:8);
+        if fitParams.fitHDR
+        [prefitx prefity prefitrfHalfWidth prefitHDRExp] = ndgrid(xspace,1,xHW,2:2:8);
+        else
+        [prefitx prefity prefitrfHalfWidth] = ndgrid(xspace,1,xHW);
+        end
         
     else
         % convert stimulus spacing to voxel magnifcation domain
-        StimXMin = round(min(stimX)*0.5);
-        StimXMax = round(max(stimX)*2);
-        nStimuli = round(length(stimX)/5);
+        StimXMin = 0;
+        StimXMax = max(stimX)*1.25;
+        nPreFit = round(length(stimX)/5);
+        StimXHWMin = 0.1;
+        StimXHWMax = max(stimX);
+        xHW = linspace(StimXHWMin, StimXHWMax, nPreFit);   
         if any(strcmp(fitParams.voxelScale,{'lin'}))
-            xspace = linspace(StimXMin, StimXMax, nStimuli);
+            xspace = linspace(StimXMin, StimXMax, nPreFit);            
         elseif any(strcmp(fitParams.voxelScale,{'log'}))
-            xspace = 10.^(linspace(log10(StimXMin), log10(StimXMax), nStimuli));
+            xspace = 10.^(linspace(log10(StimXMin), log10(StimXMax), nPreFit));
         elseif any(strcmp(fitParams.voxelScale,{'erb'}))
-            xspace = funInvNErb(linspace(funNErb(StimXMin), funNErb(StimXMax), nStimuli));
+            xspace = funInvNErb(linspace(funNErb(StimXMin), funNErb(StimXMax), nPreFit));
         else
             disp(sprintf('(pRFFit:getRFModel) Unknown voxelScale: %s',fitParams.voxelScale));
         end
         %     [prefitx prefity prefitrfHalfWidth] = ndgrid(-0.4:0.025:0.4,-0.4:0.025:0.4,[0.0125 0.025 0.05 0.1 0.25 0.5 0.75]);
         %         [prefitx prefity prefitrfHalfWidth prefitHDRExp] = ndgrid(0.1:1:20,1,[0.1 0.2 0.4 0.8 1.6 3.2 6.4 12.8],1:1:8);
-        [prefitx prefity prefitrfHalfWidth prefitHDRExp] = ndgrid(xspace,1,[0.5 1 1.5 2 3 5 10 20],1:0.5:8);
+        if fitParams.fitHDR
+        [prefitx prefity prefitrfHalfWidth prefitHDRExp] = ndgrid(xspace,1,xHW,1:0.5:8);
+        else
+        [prefitx prefity prefitrfHalfWidth] = ndgrid(xspace,1,xHW);
+        end
     end
     fitParams.prefit.quickPrefit = fitParams.quickPrefit;
     fitParams.prefit.n = length(prefitx(:));
     fitParams.prefit.x = prefitx(:);
     fitParams.prefit.y = prefity(:);
     fitParams.prefit.rfHalfWidth = prefitrfHalfWidth(:);
+    if fitParams.fitHDR
     fitParams.prefit.HDRExp = prefitHDRExp(:);
-
+    end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %    checkStimForAverages    %
