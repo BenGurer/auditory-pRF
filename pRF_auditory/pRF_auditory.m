@@ -228,6 +228,8 @@ for scanNum = params.scanNum
     
     %   if params.pRFFit.supersampling == 1
     var.supersamplingMode = 'Automatic';
+    %% SET CURRENT SCAN HERE FOR VIEW
+    v  = viewSet(v,'curScan',params.scanNum);
     params.pRFFit.d = getStimvolpRF(v,var);
     %   end
     
@@ -275,6 +277,7 @@ for scanNum = params.scanNum
     thisr2 = nan(1,n);
     thisNRMSD = nan(1,n);
     thisRfHalfWidth = nan(1,n);
+    thisScale = nan(2,n);
     %   thishdrExp = nan(1,n);
     %   thishdrtimelag = nan(1,n);
     %   thishdrscale = nan(1,n);
@@ -340,7 +343,7 @@ for scanNum = params.scanNum
         end
         
         % now loop over each voxel
-        %     for i = blockStart:blockEnd
+%             for i = blockStart:blockEnd
         parfor i = blockStart:blockEnd
             fit = pRF_auditoryFit(v,scanNum,x(i),y(i),z(i),'stim',stim,'concatInfo',concatInfo,'prefit',prefit,'fitTypeParams',params.pRFFit,'dispIndex',i,'dispN',n,'tSeries',loadROI.tSeries(i-blockStart+1,:)','framePeriod',framePeriod,'junkFrames',junkFrames,'paramsInfo',paramsInfo);
             if ~isempty(fit)
@@ -355,6 +358,9 @@ for scanNum = params.scanNum
                 
                 % keep parameters
                 rawParams(:,i) = fit.params(:);
+                if isfield(fit,'scale')
+                thisScale(:,i) = fit.scale(:);
+                end
                 %         thishdrExp(i) = fit.hdrExp;
                 %         thishdrtimelag(i) = fit.hdrtimelag;
                 %         thishdrscale(i) = fit.scale(1);
@@ -394,6 +400,7 @@ for scanNum = params.scanNum
     pRFAnal.d{scanNum}.params = rawParams;
     pRFAnal.d{scanNum}.r = r;
     pRFAnal.d{scanNum}.r2 = thisr2;
+    pRFAnal.d{scanNum}.scale = thisScale;
     
     iScan = find(params.scanNum == scanNum);
     thisParams.scanNum = params.scanNum(iScan);

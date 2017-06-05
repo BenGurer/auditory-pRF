@@ -40,10 +40,10 @@ end
 % else
 %   acquisitionSubsample = 1;
 % end
-if ~fieldIsNotDefined(d,'acquisitionDelay')
-  acquisitionDelay = params.acquisitionDelay;
-else
+if fieldIsNotDefined(params,'acquisitionDelay')  
   acquisitionDelay = d.tr/2;
+else
+  acquisitionDelay = params.acquisitionDelay;
 end
 if isfield(params.scanParams{scanNum},'stimToEVmatrix') && ~isempty(params.scanParams{scanNum}.stimToEVmatrix)
   %match stimNames in params to stimNames in structure d
@@ -87,16 +87,55 @@ for k = 1:length(d.stimNames)
     x(:,k) = sscanf(d.stimNames{:,k}, '%*s %d%*s', [1, inf]); % remove text to get frequency in Hz
 end
 x = x/1000; % convert Hz to kHz
+
+% if ~fieldIsNotDefined(params,'weightStimulus')
+if params.weightStimulus == 1
+    stimLevel = 75;
+    nMaskingLevel = 25;
+    stimSLlevel = stimLevel - nMaskingLevel;
+%     Threshold_dBHL = createSteeplySlopingHearingLoss_dBHL(x,0);
+    Threshold_dBHL = funSimulateHearingLoss(x);
+    thresholdBaseline = nMaskingLevel*ones(size(x));
+    threshEvel =  max(Threshold_dBHL,thresholdBaseline);
+%     
+    stimWeighting = (stimLevel-threshEvel)/stimSLlevel;
+%     alpha = 0.5; % apply compressive or expansive function - is brain activity linearally related to dB level
+%     stimWeighting = stimWeighting.^alpha;
+    
+% % get threshold elevating noise levels at each stimulus frequency
+% threshEvel = funSimulateHearingLoss(x);
+% %%% NOTE: we don't want the CR applied and we could normalise by max SL level
+% 
+% % normalise by max value
+% stimWeighting = (stimLevel-threshEvel)/max(threshEvel);
+
+for i = 1:length(stimWeighting)
+    d.EVmatrix(d.EVmatrix(:,i) == 1,i) = stimWeighting(i);
+end
+else
+end
+% figure; imagesc(d.EVmatrix)
 if ~params.Convert2kHz 
     x = funNErb(x);
 end    
-    
+
+if isfield(d.concatInfo,'n')
 stim = cell(d.concatInfo.n,1); 
 for i = 1:d.concatInfo.n
+    
     prune = runTransition(i,:);
     stimMatrixPrune = d.EVmatrix(prune(1):prune(2),:);
     stim{i}.im = permute(stimMatrixPrune,[3,2,1]);
     stim{i}.x = x;
     stim{i}.y = 1;
     stim{i}.t = d.stimfile{i}.mylog.stimtimes_s;
+end
+else
+    prune = runTransition;
+    stimMatrixPrune = d.EVmatrix(prune(1):prune(2),:);
+%     stimMatrixPrune = d.EVmatrix;
+    stim.im = permute(stimMatrixPrune,[3,2,1]);
+    stim.x = x;
+    stim.y = 1;
+    stim.t = d.stimfile{1}.mylog.stimtimes_s;
 end

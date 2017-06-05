@@ -39,6 +39,22 @@ if isempty(r2)
   disp(sprintf('(pRFPlot) pRF analysis has not been run on this scan'));
   return
 end
+thisR2 = r2(x,y,z);
+polarAngle = viewGet(v,'overlayData',scanNum,viewGet(v,'overlayNum','PrefCentreFreq'));
+thisPrefCentreFreq = PrefCentreFreq(x,y,z);
+rfHalfWidth = viewGet(v,'overlayData',scanNum,viewGet(v,'overlayNum','rfHalfWidth'));
+thisRfHalfWidth = rfHalfWidth(x,y,z);
+
+    roiNum = iPlot-1;
+    % get roi scan coords
+    roi{roiNum}.scanCoords = getROICoordinates(thisView,roi{roiNum},scanNum);
+    %get ROI estimates 
+    volumeIndices = sub2ind(size(r2data),roi{roiNum}.scanCoords(1,:),roi{roiNum}.scanCoords(2,:),roi{roiNum}.scanCoords(3,:));
+    roiIndices = (r2data(volumeIndices)>r2clip(1)) & (r2data(volumeIndices)<r2clip(2));% & (~isnan(volumeBetas(volumeIndices,1,1)))';
+    volumeIndices = volumeIndices(roiIndices);
+    [e,volumeIndices] = getEstimates(glmData,analysisParams,volumeIndices');
+    nVoxels = length(volumeIndices);
+    nTotalVoxels = length(roiIndices);
 
 threshold = 0.1;
 [r2index r2v] = find(d.r2>=threshold);

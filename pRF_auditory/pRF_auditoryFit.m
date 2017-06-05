@@ -177,14 +177,18 @@ if isfield(fitParams,'prefit') && ~isempty(fitParams.prefit)
         % fit the model with these parameters
         if fitParams.fitHDR
             [residual modelResponse rfModel r scale] = getModelResidual([fitParams.prefit.x(i) fitParams.prefit.y(i) fitParams.prefit.rfHalfWidth(i) fitParams.prefit.HDRExp(i) params(5:end)],tSeries,fitParams,1);
+            if fitParams.verbose
+                disp(sprintf('(pRF_auditoryFit) Computing prefit model response %i/%i: Center [%6.2f,%6.2f] rfHalfWidth=%5.2f HDRExp=%5.2f',i,fitParams.prefit.n,fitParams.prefit.x(i),fitParams.prefit.y(i),fitParams.prefit.rfHalfWidth(i),fitParams.prefit.HDRExp(i)));
+            end
         else
             [residual modelResponse rfModel r scale] = getModelResidual([fitParams.prefit.x(i) fitParams.prefit.y(i) fitParams.prefit.rfHalfWidth(i) params(4:end)],tSeries,fitParams,1);
+            if fitParams.verbose
+                disp(sprintf('(pRF_auditoryFit) Computing prefit model response %i/%i: Center [%6.2f,%6.2f] rfHalfWidth=%5.2f',i,fitParams.prefit.n,fitParams.prefit.x(i),fitParams.prefit.y(i),fitParams.prefit.rfHalfWidth(i)));
+            end
         end
-      % normalize to 0 mean unit length
-      allModelResponse(i,:) = (modelResponse-mean(modelResponse))./sqrt(sum(modelResponse.^2))';
-      if fitParams.verbose
-	disp(sprintf('(pRF_auditoryFit) Computing prefit model response %i/%i: Center [%6.2f,%6.2f] rfHalfWidth=%5.2f HDRExp=%5.2f',i,fitParams.prefit.n,fitParams.prefit.x(i),fitParams.prefit.y(i),fitParams.prefit.rfHalfWidth(i),fitParams.prefit.HDRExp(i)));
-      end
+        % normalize to 0 mean unit length
+        allModelResponse(i,:) = (modelResponse-mean(modelResponse))./sqrt(sum(modelResponse.^2))';
+        
     end
     disppercent(inf);
     fitParams.prefit.modelResponse = allModelResponse;
@@ -280,7 +284,9 @@ fit.rfHalfWidth = fit.std;
 fit.hdrExp = fit.canonical.exponent;
 % fit.hdrtimelag = fit.canonical.timelag;
 % fit.hdr = fit.canonical;
-% fit.scale = scale;
+if exist('scale','var')
+fit.scale = scale;
+end
 % fit.N = N;
 
 if any(strcmp(fitParams.voxelScale,{'lin'}))
@@ -320,22 +326,23 @@ fitParams.stimT = fitParams.stim{1}.t;
 fitParams.stimWidth = 1;  % fitParams.stimExtents(3)-fitParams.stimExtents(1);
 fitParams.stimHeight = 1; % fitParams.stimExtents(4)-fitParams.stimExtents(2);
 
+% StimXMin = min(fitParams.stimX)*0.5;
 StimXMin = min(fitParams.stimX)*0.5;
-StimXMax = max(fitParams.stimX)*2;
-
+StimXMax = max(fitParams.stimX)*1.25;
+StimXInc = (StimXMax-StimXMin)/100;
 
 if ~isfield(fitParams,'initParams')
     
     % parameter names/descriptions and other information for allowing user to set them
     fitParams.paramNames = {'x','y','rfWidth'};
     fitParams.paramDescriptions = {'RF x position (Frequency)','RF y position (Unused)','RF width (std of gaussian)'};
-    fitParams.paramIncDec = [0.01 1 0.1];
-    fitParams.paramMin = [StimXMin -1 0.001];
-    fitParams.paramMax = [StimXMax 1.1 inf];
+    fitParams.paramIncDec = [StimXInc 1 StimXInc];
+    fitParams.paramMin = [StimXMin -1 StimXMin];
+    fitParams.paramMax = [StimXMax 1.1 StimXMax];
     % set min/max and init
-    fitParams.minParams = [StimXMin 1 0.001];
-    fitParams.maxParams = [StimXMax 1.1 inf];
-    fitParams.initParams = [0 0 4];
+    fitParams.minParams = [StimXMin 1 StimXMin];
+    fitParams.maxParams = [StimXMax 1.1 StimXMax];
+    fitParams.initParams = [1 1 4];
     if fitParams.fitHDR     
         fitParams.paramNames = {fitParams.paramNames{:} 'exp','timelag','tau'};
         fitParams.paramDescriptions = {fitParams.paramDescriptions{:} 'Exponent','Time before start of rise of hemodynamic function','Width of the hemodynamic function (tau parameter of gamma)'};
@@ -364,6 +371,8 @@ if ~isfield(fitParams,'initParams')
 
   
   % round constraints
+  fitParams.paramMin = round(fitParams.paramMin*10)/10;
+  fitParams.paramMax = round(fitParams.paramMax*10)/10;
   fitParams.minParams = round(fitParams.minParams*10)/10;
   fitParams.maxParams = round(fitParams.maxParams*10)/10;
 
@@ -571,17 +580,17 @@ if exist('myaxis') == 2,myaxis;end
 %%%%%%%%%%%%%%%%%%%%%%%%
 %    scaleAndOffset    %
 %%%%%%%%%%%%%%%%%%%%%%%%
-function [modelResponse residual beta] = scaleAndOffset(modelResponse,tSeries)
+function [modelResponse residual scale] = scaleAndOffset(modelResponse,tSeries)
 
 designMatrix = modelResponse;
 designMatrix(:,2) = 1;
 residual = [];
-beta = [];
-% get beta weight for the modelResponse
+scale = [];
+% get scale weight for the modelResponse
 if ~any(isnan(modelResponse))
-  beta = pinv(designMatrix)*tSeries;
-  beta(1) = max(beta(1),0);
-  modelResponse = designMatrix*beta;
+  scale = pinv(designMatrix)*tSeries;
+  scale(1) = max(scale(1),0);
+  modelResponse = designMatrix*scale;
   residual = tSeries-modelResponse;
 else
   residual = tSeries;  
@@ -939,13 +948,15 @@ stimT = fitParams.stim{1}.t;
     if fitParams.quickPrefit
         if fitParams.verbose,disp(sprintf('(pRFFit) Doing quick prefit'));end
         % convert stimulus spacing to voxel magnifcation domain
-%         StimXMin = min(stimX)*0.5;
-        StimXMin = 0;
+        StimXMin = min(stimX)*0.5;
+%         StimXMin = 1;
         StimXMax = max(stimX)*1.25;
-        nPreFit = round(length(stimX)/10);
-        StimXHWMin = 0.1;
+%         StimXMax = max(stimX);
+        nPreFit = round(length(stimX)/2);
+        StimXHWMin = 0.5;
         StimXHWMax = max(stimX);
-        xHW = linspace(StimXHWMin, StimXHWMax, nPreFit);   
+        nPreFitXHW = round(length(stimX)/4);
+        xHW = linspace(StimXHWMin, StimXHWMax, nPreFitXHW);  
         if any(strcmp(fitParams.voxelScale,{'lin'}))
             xspace = linspace(StimXMin, StimXMax, nPreFit);
         elseif any(strcmp(fitParams.voxelScale,{'log'}))
@@ -963,12 +974,16 @@ stimT = fitParams.stim{1}.t;
         
     else
         % convert stimulus spacing to voxel magnifcation domain
-        StimXMin = 0;
+%         StimXMin = 1;
+        StimXMin = min(stimX)*0.5;
+%         StimXMin = 0.5
         StimXMax = max(stimX)*1.25;
-        nPreFit = round(length(stimX)/5);
-        StimXHWMin = 0.1;
+%         StimXMax = max(stimX);
+        nPreFit = round(length(stimX)*2);
+        StimXHWMin = 0.5;
         StimXHWMax = max(stimX);
-        xHW = linspace(StimXHWMin, StimXHWMax, nPreFit);   
+        nPreFitXHW = round(length(stimX)/2);
+        xHW = linspace(StimXHWMin, StimXHWMax, nPreFitXHW);   
         if any(strcmp(fitParams.voxelScale,{'lin'}))
             xspace = linspace(StimXMin, StimXMax, nPreFit);            
         elseif any(strcmp(fitParams.voxelScale,{'log'}))
