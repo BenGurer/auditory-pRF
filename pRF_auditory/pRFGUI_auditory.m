@@ -134,7 +134,7 @@ if ~isempty(v)
   paramsInfo{end+1} = {'dispStimScan',viewGet(v,'curScan'),'incdec=[-1 1]',sprintf('minmax=[1 %i]',viewGet(v,'nScans')),'round=1','Sets which scans stimulus will be displayed when you press Display stimulus button'};
 end
 %% HDR params
-paramsInfo{end+1} = {'fitHDR',1,'type=checkbox','Set to true if you want to fit the HDR exponents'};
+paramsInfo{end+1} = {'fitHDR',0,'type=checkbox','Set to true if you want to fit the HDR exponents'};
 paramsInfo{end+1} = {'timelag',1,'minmax=[0 inf]','incdec=[-0.5 0.5]','The timelag of the gamma function used to model the HDR. If using gaussian-hdr, this is just the initial value and the actual value will be fit.'};
 paramsInfo{end+1} = {'tau',0.6,'minmax=[0 inf]','incdec=[-0.1 0.1]','The tau (width) of the gamma function used to model the HDR. If using gaussian-hdr, this is just the initial value and the actual value will be fit.'};
 paramsInfo{end+1} = {'exponent',4,'minmax=[0 inf]','incdec=[-1 1]','The exponent of the gamma function used to model the HDR. This is always a fixed param.'};
@@ -152,8 +152,11 @@ paramsInfo{end+1} = {'recomputeStimImage',0,'type=checkbox','Even if there is an
 paramsInfo{end+1} = {'applyFiltering',1,'type=checkbox','If set to 1 then applies the same filtering that concatenation does to the model. Does not do any filtering applied by averages. If this is not a concat then does nothing besides mean subtraction. If turned off, will still do mean substraction on model.'};
 paramsInfo{end+1} = {'stimImageDiffTolerance',5,'minmax=[0 100]','incdec=[-1 1]','When averaging the stim images should be the same, but some times we are off by a frame here and there due to inconsequential timing inconsistenices. Set this to a small value, like 5 to ignore that percentage of frames of the stimulus that differ within an average. If this threshold is exceeded, the code will ask you if you want to continue - otherwise it will just print out to the buffer the number of frames that have the problem'};
 paramsInfo{end+1} = {'supersampling',0,'type=checkbox','Supersample design matrix?'};
-paramsInfo{end+1} = {'acquisitionDelay',0.75,'minmax=[0 100]','incdec=[-1 1]','Image acquistion delay - only used for supersampling'};
-paramsInfo{end+1} = {'weightStimulus',0,'type=checkbox','Set to true if you want to weight the stimulus design matrix by stimulus sensation level (level above threshold elevating noise)'};
+paramsInfo{end+1} = {'acquisitionDelay',0.75,'minmax=[0 100]','incdec=[-0.1 0.1]','Image acquistion delay - only used for supersampling'};
+paramsInfo{end+1} = {'stimulusWeighting',{'None','SL_level','BOLD','fit'},'Which algorithm to use for optimization. Levenberg-marquardt seems to get stuck in local minimum, so the default is nelder-mead. However, levenberg-marquardt can set bounds for parameters, so may be better for when you are trying to fit the hdr along with the rf, since the hdr parameters can fly off to strange values.'};
+paramsInfo{end+1} = {'SWgradient',0.0174,'minmax=[0 100]','incdec=[-0.1 0.1]','Used if stimulus weighted by BOLD, sets gradient'};
+paramsInfo{end+1} = {'SWoffset', -0.1176,'minmax=[0 100]','incdec=[-0.1 0.1]','Used if stimulus weighted by BOLD, sets offset'};
+% paramsInfo{end+1} = {'swValues',0,'type=checkbox','Set to true if you want to weight the stimulus design matrix by stimulus sensation level (level above threshold elevating noise)'};
 
 % Get parameter values
 if defaultParams

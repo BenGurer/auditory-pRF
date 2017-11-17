@@ -167,14 +167,22 @@ rfHalfWidth.colormapType = 'setRangeToMax';
 rfHalfWidth.colormap = jet(256);
 
 % create the parameters for the NRMSD overlay
-NRMSD = r2;
-NRMSD.name = 'NRMSD';
-NRMSD.range = [0 1];
-NRMSD.clip = [-30 30];
-NRMSD.colormapType = 'setRangeToMax';
-NRMSD.colormap = hot(312);
-% colormap is made with a little bit less on the dark end
-NRMSD.colormap = NRMSD.colormap(end-255:end,:);
+% NRMSD = r2;
+% NRMSD.name = 'NRMSD';
+% NRMSD.range = [0 1];
+% NRMSD.clip = [-30 30];
+% NRMSD.colormapType = 'setRangeToMax';
+% NRMSD.colormap = hot(312);
+% % colormap is made with a little bit less on the dark end
+% NRMSD.colormap = NRMSD.colormap(end-255:end,:);
+
+
+compression = r2;
+compression.name = 'compresssion';
+compression.range = [0 10];
+compression.clip = [0 10];
+compression.colormapType = 'setRangeToMax';
+rfHalfWidth.colormap = jet(256);
 
 % % create the parameters for the HDR exponent overlay
 % hdrExp = r2;
@@ -239,6 +247,7 @@ for scanNum = params.scanNum
     %   pCFscaled.data{scanNum} = nan(scanDims);
     NRMSD.data{scanNum} = nan(scanDims);
     rfHalfWidth.data{scanNum} = nan(scanDims);
+    compression.data{scanNum} = nan(scanDims);
     %   hdrExp.data{scanNum} = nan(scanDims);
     %   hdrtimelag.data{scanNum} = nan(scanDims);
     %   hdrScale.data{scanNum} = nan(scanDims);
@@ -275,9 +284,11 @@ for scanNum = params.scanNum
     rawParams = nan(fit.nParams,n);
     r = nan(n,fit.concatInfo.n);
     thisr2 = nan(1,n);
-    thisNRMSD = nan(1,n);
+%     thisNRMSD = nan(1,n);
     thisRfHalfWidth = nan(1,n);
     thisScale = nan(2,n);
+    thisPrefCentreFreq = nan(2,n);
+    thisY = nan(2,n);
     %   thishdrExp = nan(1,n);
     %   thishdrtimelag = nan(1,n);
     %   thishdrscale = nan(1,n);
@@ -343,18 +354,20 @@ for scanNum = params.scanNum
         end
         
         % now loop over each voxel
-%             for i = blockStart:blockEnd
-        parfor i = blockStart:blockEnd
+            for i = blockStart:blockEnd
+%         parfor i = blockStart:blockEnd
             fit = pRF_auditoryFit(v,scanNum,x(i),y(i),z(i),'stim',stim,'concatInfo',concatInfo,'prefit',prefit,'fitTypeParams',params.pRFFit,'dispIndex',i,'dispN',n,'tSeries',loadROI.tSeries(i-blockStart+1,:)','framePeriod',framePeriod,'junkFrames',junkFrames,'paramsInfo',paramsInfo);
             if ~isempty(fit)
                 % keep data, note that we are keeping temporarily in
                 % a vector here so that parfor won't complain
                 % then afterwords we put it into the actual overlay struct
                 thisr2(i) = fit.r2;
-                thisNRMSD(i) = fit.NRMSD;
+%                 thisNRMSD(i) = fit.NRMSD;
                 thisPrefCentreFreq(i) = fit.PrefCentreFreq;
                 thisRfHalfWidth(i) = fit.rfHalfWidth;
                 %         thispCFscaled(i) = fit.pCFscaled;
+                thisY(i) = fit.PrefY;
+                thisComp(i) = fit.compression;
                 
                 % keep parameters
                 rawParams(:,i) = fit.params(:);
@@ -366,17 +379,17 @@ for scanNum = params.scanNum
                 %         thishdrscale(i) = fit.scale(1);
                 %         thishdroffset(i) = fit.scale(2);
                 r(i,:) = fit.r;
-                
-                
+                                
             end
         end
         
         % set overlays
         for i = 1:n
             r2.data{scanNum}(x(i),y(i),z(i)) = thisr2(i);
-            NRMSD.data{scanNum}(x(i),y(i),z(i)) = thisNRMSD(i);
+%             NRMSD.data{scanNum}(x(i),y(i),z(i)) = thisNRMSD(i);
             PrefCentreFreq.data{scanNum}(x(i),y(i),z(i)) = thisPrefCentreFreq(i);
             rfHalfWidth.data{scanNum}(x(i),y(i),z(i)) = thisRfHalfWidth(i);
+            compression.data{scanNum}(x(i),y(i),z(i)) = thisComp(i);
             %       pCFscaled.data{scanNum}(x(i),y(i),z(i)) = thispCFscaled(i);
             
             %       hdrExp.data{scanNum}(x(i),y(i),z(i)) = thishdrExp(i);
@@ -389,13 +402,18 @@ for scanNum = params.scanNum
     disp(sprintf('(pRF_auditory) Fitting %i voxels took %s.',n,mlrDispElapsedTime(toc)));
     dispHeader;
     
-    % Change overlay range to fit data
-    PrefCentreFreq.range = [min(thisPrefCentreFreq) max(thisPrefCentreFreq)];
-    PrefCentreFreq.clip = [min(thisPrefCentreFreq) max(thisPrefCentreFreq)];
+%     % Change overlay range to fit data
+%     PrefCentreFreq.range = [min(thisPrefCentreFreq) max(thisPrefCentreFreq)];
+%     PrefCentreFreq.clip = [min(thisPrefCentreFreq) max(thisPrefCentreFreq)];
+    
+    PrefCentreFreq.range = [1 41];
+    PrefCentreFreq.clip = [1 41];
     rfHalfWidth.range = [min(thisRfHalfWidth) max(thisRfHalfWidth)];
     rfHalfWidth.clip = [min(thisRfHalfWidth) max(thisRfHalfWidth)];
-    NRMSD.range = [min(thisNRMSD) max(thisNRMSD)];
-    NRMSD.clip = [min(thisNRMSD) max(thisNRMSD)];
+    compression.range = [-1 1];    
+    compression.clip = [-1 1];
+%     NRMSD.range = [min(thisNRMSD) max(thisNRMSD)];
+%     NRMSD.clip = [min(thisNRMSD) max(thisNRMSD)];
     
     pRFAnal.d{scanNum}.params = rawParams;
     pRFAnal.d{scanNum}.r = r;
@@ -405,9 +423,10 @@ for scanNum = params.scanNum
     iScan = find(params.scanNum == scanNum);
     thisParams.scanNum = params.scanNum(iScan);
     r2.params{scanNum} = thisParams;
-    NRMSD.params{scanNum} = thisParams;
+%     NRMSD.params{scanNum} = thisParams;
     PrefCentreFreq.params{scanNum} = thisParams;
-    rfHalfWidth.params{scanNum} = thisParams;
+    rfHalfWidth.params{scanNum} = thisParams;    
+    compression.params{scanNum} = thisParams;
     %   pCFscaled.params{scanNum} = thisParams;
     %   hdrExp.params{scanNum} = thisParams;
     %   hdrtimelag.params{scanNum} = thisParams;
@@ -429,7 +448,7 @@ pRFAnal.guiFunction = 'pRF_auditoryGUI';
 pRFAnal.params = params;
 % pRFAnal.overlays = [r2 NRMSD PrefCentreFreq pCFscaled rfHalfWidth hdrExp hdrtimelag hdrScale];
 
-pRFAnal.overlays = [r2 NRMSD PrefCentreFreq rfHalfWidth];
+pRFAnal.overlays = [r2, PrefCentreFreq, rfHalfWidth, compression];
 pRFAnal.curOverlay = 1;
 pRFAnal.date = dateString;
 v = viewSet(v,'newAnalysis',pRFAnal);

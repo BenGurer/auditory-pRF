@@ -81,39 +81,14 @@ d.EVmatrix = stimMatrix*stimToEVmatrix;
 
 % make into pRF image format
 
- 
 x = zeros(1, length(d.stimNames));
 for k = 1:length(d.stimNames)
     x(:,k) = sscanf(d.stimNames{:,k}, '%*s %d%*s', [1, inf]); % remove text to get frequency in Hz
 end
 x = x/1000; % convert Hz to kHz
 
-% if ~fieldIsNotDefined(params,'weightStimulus')
-if params.weightStimulus == 1
-    stimLevel = 75;
-    nMaskingLevel = 25;
-    stimSLlevel = stimLevel - nMaskingLevel;
-%     Threshold_dBHL = createSteeplySlopingHearingLoss_dBHL(x,0);
-    Threshold_dBHL = funSimulateHearingLoss(x);
-    thresholdBaseline = nMaskingLevel*ones(size(x));
-    threshEvel =  max(Threshold_dBHL,thresholdBaseline);
-%     
-    stimWeighting = (stimLevel-threshEvel)/stimSLlevel;
-%     alpha = 0.5; % apply compressive or expansive function - is brain activity linearally related to dB level
-%     stimWeighting = stimWeighting.^alpha;
-    
-% % get threshold elevating noise levels at each stimulus frequency
-% threshEvel = funSimulateHearingLoss(x);
-% %%% NOTE: we don't want the CR applied and we could normalise by max SL level
-% 
-% % normalise by max value
-% stimWeighting = (stimLevel-threshEvel)/max(threshEvel);
 
-for i = 1:length(stimWeighting)
-    d.EVmatrix(d.EVmatrix(:,i) == 1,i) = stimWeighting(i);
-end
-else
-end
+
 % figure; imagesc(d.EVmatrix)
 if ~params.Convert2kHz 
     x = funNErb(x);
