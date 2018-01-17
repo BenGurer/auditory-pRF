@@ -56,12 +56,13 @@ end
 
 if isfield(d.concatInfo,'n')
     for i = 1:d.concatInfo.n
-        
-        stim{i}.im = stimulusWeighting .* stim{i}.im;
+        stimulusWeighting_rep = repmat(stimulusWeighting,1,1,length(stim{i}.im));
+        stim{i}.im = stimulusWeighting_rep .* stim{i}.im;
         
     end
 else
     
-    stim.im = stimulusWeighting .* stim.im;
+    stimulusWeighting_rep = repmat(stimulusWeighting,1,1,length(stim.im));
+    stim.im = stimulusWeighting_rep .* stim.im;
     
 end
