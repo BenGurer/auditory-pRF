@@ -155,7 +155,12 @@ PrefCentreFreq.name = 'PrefCentreFreq';
 PrefCentreFreq.range = [0.02 20]; %cf 0.5-3.5
 PrefCentreFreq.clip = [0.02 20];
 PrefCentreFreq.colormapType = 'setRangeToMax';
-PrefCentreFreq.colormap = jet(256);
+% PrefCentreFreq.colormap = jet(256);
+if exist('brewermap.m', 'file')
+    PrefCentreFreq.colormap = brewermap(256,'*YlGnBu');
+else
+    PrefCentreFreq.colormap = jet(256);
+end
 
 % create the paramteres for the rfHalfWidth overlay
 % deal with the sigma.
@@ -164,7 +169,12 @@ rfHalfWidth.name = 'rfHalfWidth';
 rfHalfWidth.range = [0 100];
 rfHalfWidth.clip = [0 100];
 rfHalfWidth.colormapType = 'setRangeToMax';
-rfHalfWidth.colormap = jet(256);
+% rfHalfWidth.colormap = jet(256);
+if exist('brewermap.m', 'file')
+    PrefCentreFreq.colormap = brewermap(256,'*YlGnBu');
+else
+    PrefCentreFreq.colormap = jet(256);
+end
 
 % create the parameters for the NRMSD overlay
 % NRMSD = r2;
