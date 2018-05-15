@@ -171,9 +171,9 @@ rfHalfWidth.clip = [0 100];
 rfHalfWidth.colormapType = 'setRangeToMax';
 % rfHalfWidth.colormap = jet(256);
 if exist('brewermap.m', 'file')
-    PrefCentreFreq.colormap = brewermap(256,'*YlGnBu');
+    rfHalfWidth.colormap = brewermap(256,'*YlGnBu');
 else
-    PrefCentreFreq.colormap = jet(256);
+    rfHalfWidth.colormap = jet(256);
 end
 
 % create the parameters for the NRMSD overlay
@@ -192,7 +192,7 @@ compression.name = 'compresssion';
 compression.range = [0 10];
 compression.clip = [0 10];
 compression.colormapType = 'setRangeToMax';
-rfHalfWidth.colormap = jet(256);
+compression.colormap = jet(256);
 
 % % create the parameters for the HDR exponent overlay
 % hdrExp = r2;

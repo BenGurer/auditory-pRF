@@ -283,7 +283,11 @@ fit.NRMSD = fit.RMSD/max(residual)-min(residual);
 % [fit.polarAngle fit.eccentricity] = cart2pol(fit.x,fit.y);
 fit.PrefCentreFreq = fit.x;
 fit.PrefY = fit.y;
+if fitParams.fwhm
+fit.rfHalfWidth = 2.355 .* fit.std;
+else
 fit.rfHalfWidth = fit.std;
+end
 fit.compression = fit.alpha;
 fit.hdrExp = fit.canonical.exponent;
 % fit.hdrtimelag = fit.canonical.timelag;
@@ -335,7 +339,7 @@ StimXMin = min(fitParams.stimX)*0.5;
 % StimXMax = max(fitParams.stimX)*1.25;
 StimXMax = 41.5;
 StimXInc = (StimXMax-StimXMin)/1000;
-StimTWMin = 1;
+StimTWMin = 0.01;
 StimTWMax = max(fitParams.stimX)/2;
 StimTWInc = 0.05;
 
@@ -360,11 +364,11 @@ if ~isfield(fitParams,'initParams')
     % set min/max and init
     fitParams.minParams = [StimXMin compressionMin StimTWMin];
     fitParams.maxParams = [StimXMax compressionMax StimTWMax];
-    fitParams.initParams = [1 1 4];
+    fitParams.initParams = [1 1 1];
     if fitParams.fitHDR
         fitParams.paramNames = {fitParams.paramNames{:} 'exp','timelag','tau'};
         fitParams.paramDescriptions = {fitParams.paramDescriptions{:} 'Exponent','Time before start of rise of hemodynamic function','Width of the hemodynamic function (tau parameter of gamma)'};
-        fitParams.paramIncDec = [fitParams.paramIncDec(:)' 0.5 0.1 0.1];
+        fitParams.paramIncDec = [fitParams.paramIncDec(:)' 0.05 0.1 0.01];
         fitParams.paramMin = [fitParams.paramMin(:)' 0 0 0];
         fitParams.paramMax = [fitParams.paramMax(:)' 16 16 inf];
         % set min/max and init
@@ -983,14 +987,14 @@ end
 
 if fitParams.quickPrefit
     if fitParams.verbose,disp(sprintf('(pRFFit) Doing quick prefit'));end
-    % convert stimulus spacing to voxel magnifcation domain
     StimXMin = min(stimX)*0.5;
     %         StimXMin = 1;
     StimXMax = max(stimX)*1.25;
     %         StimXMax = max(stimX);
     nPreFit = round(length(stimX)/2);
     StimXHWMin = 0.5;
-    StimXHWMax = max(stimX);
+%     StimXHWMax = max(stimX);
+    StimXHWMax = 4;
     nPreFitXHW = round(length(stimX)/4);
     xHW = linspace(StimXHWMin, StimXHWMax, nPreFitXHW);
     if any(strcmp(fitParams.voxelScale,{'lin'}))
@@ -1009,7 +1013,6 @@ if fitParams.quickPrefit
     end
     
 else
-    % convert stimulus spacing to voxel magnifcation domain
     %         StimXMin = 1;
     StimXMin = min(stimX)*0.5;
     %         StimXMin = 0.5
@@ -1017,10 +1020,11 @@ else
     %         StimXMax = max(stimX);
     nPreFit = round(length(stimX)*2);
     StimXHWMin = 0.5;
-    StimXHWMax = max(stimX);
+%     StimXHWMax = max(stimX);
+    StimXHWMax = 4;
     nPreFitXHW = round(length(stimX)/2);
     %         xHW = linspace(StimXHWMin, StimXHWMax, nPreFitXHW);
-    xHW = linspace(1, round(length(stimX)/2), nPreFitXHW);
+    xHW = linspace(StimXHWMin, StimXHWMax, nPreFitXHW);
     if any(strcmp(fitParams.voxelScale,{'lin'}))
         xspace = linspace(StimXMin, StimXMax, nPreFit);
     elseif any(strcmp(fitParams.voxelScale,{'log'}))
