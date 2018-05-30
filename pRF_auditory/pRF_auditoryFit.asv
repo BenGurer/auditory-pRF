@@ -985,13 +985,17 @@ if strcmpi(fitParams.stimulusWeighting,'fit')
 else
     dynRange = 1;
 end
-StimXMin = 0;
-StimXMax = 40;
-StimXHWMin = 0.04;
-StimXHWMax = 20;
+
 if fitParams.quickPrefit
     if fitParams.verbose,disp(sprintf('(pRFFit) Doing quick prefit'));end
+    StimXMin = 0;
+    %         StimXMin = 1;
+    StimXMax = 40;
+    %         StimXMax = max(stimX);
     nPreFit = round(length(stimX)/2);
+    StimXHWMin = 0.04;
+%     StimXHWMax = max(stimX);
+    StimXHWMax = 20;
     nPreFitXHW = round(length(stimX)/4);
     xHW = linspace(StimXHWMin, StimXHWMax, nPreFitXHW);
     if any(strcmp(fitParams.voxelScale,{'lin'}))
@@ -1010,8 +1014,17 @@ if fitParams.quickPrefit
     end
     
 else
+    %         StimXMin = 1;
+    StimXMin = min(stimX)*0.5;
+    %         StimXMin = 0.5
+    StimXMax = max(stimX)*1.25;
+    %         StimXMax = max(stimX);
     nPreFit = round(length(stimX)*2);
+    StimXHWMin = 0.5;
+%     StimXHWMax = max(stimX);
+    StimXHWMax = 4;
     nPreFitXHW = round(length(stimX)/2);
+    %         xHW = linspace(StimXHWMin, StimXHWMax, nPreFitXHW);
     xHW = linspace(StimXHWMin, StimXHWMax, nPreFitXHW);
     if any(strcmp(fitParams.voxelScale,{'lin'}))
         xspace = linspace(StimXMin, StimXMax, nPreFit);
