@@ -336,12 +336,13 @@ fitParams.stimHeight = 1; % fitParams.stimExtents(4)-fitParams.stimExtents(2);
 
 % StimXMin = min(fitParams.stimX)*0.5;
 StimXMin = min(fitParams.stimX)*0.5;
-% StimXMax = max(fitParams.stimX)*1.25;
-StimXMax = 41.5;
+StimXMax = max(fitParams.stimX)*1.25;
+% StimXMax = 40;
 StimXInc = (StimXMax-StimXMin)/1000;
-StimTWMin = 0.01;
-StimTWMax = max(fitParams.stimX)/2;
-StimTWInc = 0.05;
+StimTWMin = 0.04;
+% StimTWMax = max(fitParams.stimX)/2;
+StimTWMax = 20;
+StimTWInc = 0.01;
 
 if strcmpi(fitParams.stimulusWeighting,'fit')
     compressionMax = 4;
