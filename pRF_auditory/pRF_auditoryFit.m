@@ -335,9 +335,10 @@ fitParams.stimWidth = 1;  % fitParams.stimExtents(3)-fitParams.stimExtents(1);
 fitParams.stimHeight = 1; % fitParams.stimExtents(4)-fitParams.stimExtents(2);
 
 % StimXMin = min(fitParams.stimX)*0.5;
-StimXMin = min(fitParams.stimX)*0.5;
-StimXMax = max(fitParams.stimX)*1.25;
-% StimXMax = 40;
+% StimXMin = min(fitParams.stimX)*0.5;
+% StimXMax = max(fitParams.stimX)*1.25;
+StimXMin = 1;
+StimXMax = 40;
 StimXInc = (StimXMax-StimXMin)/1000;
 StimTWMin = 0.04;
 % StimTWMax = max(fitParams.stimX)/2;
@@ -985,7 +986,7 @@ if strcmpi(fitParams.stimulusWeighting,'fit')
 else
     dynRange = 1;
 end
-StimXMin = 0;
+StimXMin = 1;
 StimXMax = 40;
 StimXHWMin = 0.04;
 StimXHWMax = 20;
