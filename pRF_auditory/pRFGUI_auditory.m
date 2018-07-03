@@ -129,7 +129,7 @@ paramsInfo{end+1} = {'verbose',true,'type=checkbox','Display verbose information
 %paramsInfo{end+1} = {'xFlipStimulus',0,'type=checkbox','Flip the stimulus image in the x-dimension. Useful if the subject viewed a stimulus which was flipped in the x-dimension'};
 paramsInfo{end+1} = {'timeShiftStimulus',0,'incdec=[-1 1]','Time shift the stimulus, this is useful if the stimulus created is not correct and needs to be shifted in time (i.e. number of volumes)'};
 paramsInfo{end+1} = {'Convert2kHz',false,'type=checkbox','Convert stimulus to kHz?'};
-paramsInfo{end+1} = {'fwhm',0,'type=checkbox','Set to true if you want to convert tuning width from sigma to FWHM'};
+paramsInfo{end+1} = {'fwhm',false,'type=checkbox','Set to true if you want to convert tuning width from sigma to FWHM'};
 if ~isempty(v)
   paramsInfo{end+1} = {'dispStim',0,'type=pushbutton','buttonString=Display stimulus','Display the stimulus for scan number: dispStimScan with the current parameters','callback',@pRFGUIDispStimulus,'passParams=1','callbackArg',v};
   paramsInfo{end+1} = {'dispStimScan',viewGet(v,'curScan'),'incdec=[-1 1]',sprintf('minmax=[1 %i]',viewGet(v,'nScans')),'round=1','Sets which scans stimulus will be displayed when you press Display stimulus button'};

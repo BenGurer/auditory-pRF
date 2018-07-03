@@ -111,8 +111,8 @@ r2.reconcileFunction = 'defaultReconcileParams';
 r2.data = cell(1,viewGet(v,'nScans'));
 r2.date = dateString;
 r2.params = cell(1,viewGet(v,'nScans'));
-r2.range = [0 1];
-r2.clip = [0 1];
+r2.range = [-0.000001 1];
+r2.clip = [-0.000001 1];
 % colormap is made with a little bit less on the dark end
 r2.colormap = hot(312);
 r2.colormap = r2.colormap(end-255:end,:);
@@ -152,8 +152,8 @@ r2.mergeFunction = 'pRFMergeParams';
 % create the parameters for the PrefCentreFreq overlay
 PrefCentreFreq = r2;
 PrefCentreFreq.name = 'PrefCentreFreq';
-PrefCentreFreq.range = [0.02 20]; %cf 0.5-3.5
-PrefCentreFreq.clip = [0.02 20];
+PrefCentreFreq.range = [1 41]; %cf 0.5-3.5
+PrefCentreFreq.clip = [1 41];
 PrefCentreFreq.colormapType = 'setRangeToMax';
 % PrefCentreFreq.colormap = jet(256);
 if exist('brewermap.m', 'file')
@@ -161,13 +161,14 @@ if exist('brewermap.m', 'file')
 else
     PrefCentreFreq.colormap = jet(256);
 end
+PrefCentreFreq.colormapType = 'setRangeToMax';
 
 % create the paramteres for the rfHalfWidth overlay
 % deal with the sigma.
 rfHalfWidth = r2;
 rfHalfWidth.name = 'rfHalfWidth';
-rfHalfWidth.range = [0 100];
-rfHalfWidth.clip = [0 100];
+rfHalfWidth.range = [0 21];
+rfHalfWidth.clip = [0 21];
 rfHalfWidth.colormapType = 'setRangeToMax';
 % rfHalfWidth.colormap = jet(256);
 if exist('brewermap.m', 'file')
@@ -175,6 +176,8 @@ if exist('brewermap.m', 'file')
 else
     rfHalfWidth.colormap = jet(256);
 end
+rfHalfWidth.colormapType = 'setRangeToMax';
+
 
 % create the parameters for the NRMSD overlay
 % NRMSD = r2;
@@ -416,12 +419,12 @@ for scanNum = params.scanNum
 %     PrefCentreFreq.range = [min(thisPrefCentreFreq) max(thisPrefCentreFreq)];
 %     PrefCentreFreq.clip = [min(thisPrefCentreFreq) max(thisPrefCentreFreq)];
     
-    PrefCentreFreq.range = [1 41];
-    PrefCentreFreq.clip = [1 41];
-    rfHalfWidth.range = [min(thisRfHalfWidth) max(thisRfHalfWidth)];
-    rfHalfWidth.clip = [min(thisRfHalfWidth) max(thisRfHalfWidth)];
-    compression.range = [-1 1];    
-    compression.clip = [-1 1];
+%     PrefCentreFreq.range = [1 41];
+%     PrefCentreFreq.clip = [1 41];
+%     rfHalfWidth.range = [min(thisRfHalfWidth) max(thisRfHalfWidth)];
+%     rfHalfWidth.clip = [min(thisRfHalfWidth) max(thisRfHalfWidth)];
+%     compression.range = [-1 1];    
+%     compression.clip = [-1 1];
 %     NRMSD.range = [min(thisNRMSD) max(thisNRMSD)];
 %     NRMSD.clip = [min(thisNRMSD) max(thisNRMSD)];
     
